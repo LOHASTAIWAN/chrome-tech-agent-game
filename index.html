@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chrome 瀏覽器與雲端科技特務：20關極限闖關修練場</title>
+  <style>
+    :root {
+      --sky-top: #1a2a6c;
+      --sky-mid: #b21f1f;
+      --sky-bottom: #fdbb2d;
+      --card-bg: rgba(255, 255, 255, 0.94);
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --accent: #f59e0b;
+      --success: #10b981;
+      --danger: #ef4444;
+      --locked: #94a3b8;
+      --text: #1e293b;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang TC", "Microsoft JhengHei", sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, var(--sky-top), var(--sky-mid), var(--sky-bottom));
+      background-attachment: fixed;
+      min-height: 100vh;
+      color: var(--text);
+      padding: 30px 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .container {
+      max-width: 900px;
+      width: 100%;
+    }
+
+    /* 頂部英雄區 */
+    header {
+      background: var(--card-bg);
+      backdrop-filter: blur(12px);
+      border-radius: 24px;
+      padding: 25px 30px;
+      text-align: center;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+      margin-bottom: 25px;
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      position: relative;
+    }
+
+    header h1 {
+      font-size: 2.1rem;
+      background: linear-gradient(45deg, #1e3a8a, #d97706);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+
+    header p {
+      font-size: 1.05rem;
+      color: #475569;
+      margin-bottom: 16px;
+    }
+
+    .header-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 10px;
+    }
+
+    .btn-reset {
+      background: transparent;
+      border: 1px solid #cbd5e1;
+      color: #64748b;
+      font-size: 0.85rem;
+      padding: 5px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-reset:hover {
+      background: #fee2e2;
+      border-color: #f87171;
+      color: #b91c1c;
+    }
+
+    /* 全局進度面板 */
+    .progress-board {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: #f8fafc;
+      padding: 15px 20px;
+      border-radius: 16px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .progress-info {
+      display: flex;
+      justify-content: space-between;
+      font-weight: bold;
+      color: #334155;
+    }
+
+    .progress-bar-bg {
+      background: #cbd5e1;
+      height: 14px;
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .progress-bar-fill {
+      background: linear-gradient(90deg, #38ef7d, #11998e);
+      height: 100%;
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+
+    /* 階段切換按鈕區 */
+    .stage-tabs {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .tab-btn {
+      flex: 1;
+      padding: 14px;
+      border-radius: 16px;
+      font-size: 1.05rem;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      transition: all 0.3s;
+      background: rgba(255, 255, 255, 0.85);
+      color: #64748b;
+    }
+
+    .tab-btn.active {
+      background: #ffffff;
+      color: var(--primary);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 25px rgba(37, 99, 235, 0.25);
+      border-bottom: 4px solid var(--primary);
+    }
+
+    .tab-btn.locked {
+      background: #e2e8f0;
+      color: #94a3b8;
+      cursor: not-allowed;
+    }
+
+    /* 關卡清單 */
+    .level-container {
+      display: none;
+    }
+
+    .level-container.active {
+      display: block;
+    }
+
+    .level-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+      border-left: 8px solid var(--locked);
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .level-card.current {
+      border-left-color: var(--primary);
+      box-shadow: 0 12px 30px rgba(37, 99, 235, 0.2);
+    }
+
+    .level-card.cleared {
+      border-left-color: var(--success);
+      opacity: 0.95;
+    }
+
+    .level-card.disabled {
+      opacity: 0.55;
+      pointer-events: none;
+    }
+
+    .level-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .level-title {
+      font-size: 1.25rem;
+      font-weight: bold;
+      color: #0f172a;
+    }
+
+    .level-badge {
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      color: white;
+      background: var(--locked);
+    }
+
+    .level-card.current .level-badge {
+      background: var(--primary);
+    }
+
+    .level-card.cleared .level-badge {
+      background: var(--success);
+    }
+
+    .level-desc {
+      color: #475569;
+      font-size: 1rem;
+      line-height: 1.6;
+      margin-bottom: 15px;
+    }
+
+    /* 互動操作區 */
+    .action-zone {
+      background: #f1f5f9;
+      padding: 16px;
+      border-radius: 14px;
+      border: 1px dashed #cbd5e1;
+    }
+
+    /* 按鍵偵測盒 */
+    .key-box-container {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .key-box {
+      background: #ffffff;
+      border: 2px solid #93c5fd;
+      border-radius: 12px;
+      padding: 18px;
+      text-align: center;
+      cursor: pointer;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .key-box:focus {
+      border-color: var(--primary);
+      background: #eff6ff;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+    }
+
+    .key-box-hint {
+      font-size: 0.95rem;
+      color: #64748b;
+    }
+
+    .key-box-display {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: var(--primary);
+      margin-top: 6px;
+    }
+
+    .key-virtual-btn {
+      align-self: center;
+      background: #e0e7ff;
+      color: #3730a3;
+      border: 1px solid #c7d2fe;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .key-virtual-btn:hover {
+      background: #c7d2fe;
+      color: #1e1b4b;
+    }
+
+    /* 選項式按鈕 */
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .option-btn {
+      background: white;
+      border: 1px solid #cbd5e1;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: #1e293b;
+    }
+
+    .option-btn:hover {
+      background: #e2e8f0;
+      border-color: #94a3b8;
+    }
+
+    /* 文字輸入實作框 */
+    .input-box-wrapper {
+      display: flex;
+      gap: 10px;
+    }
+
+    .custom-input {
+      flex: 1;
+      padding: 12px 16px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    .custom-input:focus {
+      border-color: var(--primary);
+    }
+
+    .submit-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0 20px;
+      border-radius: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .submit-btn:hover {
+      background: var(--primary-hover);
+    }
+
+    /* 即時回饋訊息 */
+    .msg-feedback {
+      margin-top: 12px;
+      font-weight: bold;
+      font-size: 0.95rem;
+      display: none;
+    }
+
+    .msg-feedback.pass {
+      color: var(--success);
+      display: block;
+    }
+
+    .msg-feedback.fail {
+      color: var(--danger);
+      display: block;
+    }
+
+    /* 破關榮譽榜彈窗 */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(6px);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+      padding: 20px;
+    }
+
+    .modal-card {
+      background: white;
+      padding: 35px 30px;
+      border-radius: 24px;
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      animation: popIn 0.35s ease forwards;
+    }
+
+    @keyframes popIn {
+      from { transform: scale(0.85); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-card h2 {
+      font-size: 2rem;
+      color: #1e3a8a;
+      margin-bottom: 12px;
+    }
+
+    .modal-card p {
+      color: #475569;
+      font-size: 1.1rem;
+      margin-bottom: 25px;
+      line-height: 1.6;
+    }
+
+    .modal-close-btn {
+      background: linear-gradient(45deg, #f59e0b, #ef4444);
+      color: white;
+      padding: 12px 30px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <div class="header-actions">
+      <button class="btn-reset" onclick="confirmResetProgress()">🔄 重設進度</button>
+    </div>
+    <h1>🚀 科技特務出任務：瀏覽器與雲端科技大挑戰</h1>
+    <p>資訊科技素養實戰・連闖 20 關解鎖現代數位工作流！</p>
+    
+    <div class="progress-board">
+      <div class="progress-info">
+        <span>全關卡進度</span>
+        <span id="progressText">0 / 20 關 (0%)</span>
+      </div>
+      <div class="progress-bar-bg">
+        <div class="progress-bar-fill" id="progressBar"></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="stage-tabs">
+    <button class="tab-btn active" id="tabBasic" onclick="switchStage('basic')">🌱 階段一：基本技巧 (1~10關)</button>
+    <button class="tab-btn locked" id="tabAdvanced" onclick="switchStage('advanced')">🔥 階段二：進階技巧 (11~20關 🔒)</button>
+  </div>
+
+  <!-- 階段一：基本技巧關卡清單 (1-10) -->
+  <div class="level-container active" id="stageBasic"></div>
+
+  <!-- 階段二：進階技巧關卡清單 (11-20) -->
+  <div class="level-container" id="stageAdvanced"></div>
+</div>
+
+<!-- 通關彈窗 -->
+<div class="modal-overlay" id="finishModal">
+  <div class="modal-card">
+    <h2 id="modalTitle">🏆 恭喜晉級！</h2>
+    <p id="modalDesc">你已成功完成所有基本技巧，進階技巧關卡已全面解鎖，立即前往接受試煉！</p>
+    <button class="modal-close-btn" onclick="closeModal()">勇往直前</button>
+  </div>
+</div>
+
+<script>
+  // 關卡總定義 (1~10 基本, 11~20 進階)
+  const levels = [
+    // === 階段一：基本技巧 ===
+    {
+      id: 1,
+      title: "第 1 關：分頁神還原",
+      desc: "查報告時手滑誤關了重要分頁！請點擊下方練習框，按下鍵盤上的【復原分頁快捷鍵】。",
+      type: "key",
+      targetText: "Ctrl + Shift + T",
+      validateKey: (e) => e.ctrlKey && e.shiftKey && (e.key === 'T' || e.key === 't'),
+      hint: "提示：點擊框框，同時按住 Ctrl + Shift + T（或點擊下方模擬按鈕）"
+    },
+    {
+      id: 2,
+      title: "第 2 關：公用電腦私密瀏覽",
+      desc: "在電腦教室為了不留下個人登入紀錄與瀏覽足跡，你會開啟什麼模式？快捷鍵為何？",
+      type: "choice",
+      options: [
+        { text: "A. 訪客帳號 (Alt + F4)", pass: false },
+        { text: "B. 無痕模式 (Ctrl + Shift + N)", pass: true },
+        { text: "C. 閱讀模式 (Ctrl + P)", pass: false }
+      ]
+    },
+    {
+      id: 3,
+      title: "第 3 關：精準關鍵字包圍戰",
+      desc: "網路闢謠：想精準查證「九天玄女阿翰」這個完整詞彙、避免文字被拆散分散在各網頁，應在關鍵字前後加上什麼符號？",
+      type: "choice",
+      options: [
+        { text: "A. 半形雙引號 \"九天玄女阿翰\"", pass: true },
+        { text: "B. 井字號 #九天玄女阿翰", pass: false },
+        { text: "C. 括號 (九天玄女阿翰)", pass: false }
+      ]
+    },
+    {
+      id: 4,
+      title: "第 4 關：我的好站收藏夾",
+      desc: "在 Chrome 瀏覽器中，按下哪組快捷鍵可以立刻將當前網頁加入「書籤」？",
+      type: "key",
+      targetText: "Ctrl + D",
+      validateKey: (e) => e.ctrlKey && (e.key === 'D' || e.key === 'd'),
+      hint: "提示：點擊框框，按住 Ctrl + D（或點擊下方模擬按鈕）"
+    },
+    {
+      id: 5,
+      title: "第 5 關：瞬間回彈搜尋列",
+      desc: "在 Google 搜尋結果頁面看完後，想重新輸入關鍵字，手不用碰滑鼠，按下鍵盤上的哪一個單鍵？",
+      type: "key",
+      targetText: "/",
+      validateKey: (e) => e.key === '/',
+      hint: "提示：點擊框框，按鍵盤上的斜線鍵 /（或點擊下方模擬按鈕）"
+    },
+    {
+      id: 6,
+      title: "第 6 關：雲端硬碟檔案搬運工",
+      desc: "想把電腦裡的作業上傳到雲端硬碟，正確路徑是？",
+      type: "choice",
+      options: [
+        { text: "A. 點選「＋新增」➔「檔案上傳」", pass: true },
+        { text: "B. 點選「設定」➔「匯入書籤」", pass: false },
+        { text: "C. 點選「垃圾桶」➔「還原檔案」", pass: false }
+      ]
+    },
+    {
+      id: 7,
+      title: "第 7 關：雲端空間有極限嗎？",
+      desc: "Google 免費提供給一般個人使用者的雲端硬碟預設儲存空間是多少？",
+      type: "choice",
+      options: [
+        { text: "A. 5 GB", pass: false },
+        { text: "B. 15 GB（包含 Gmail 與雲端硬碟共用）", pass: true },
+        { text: "C. 無限容量", pass: false }
+      ]
+    },
+    {
+      id: 8,
+      title: "第 8 關：以圖搜圖神器",
+      desc: "如果你在戶外看到不知名的花朵或名勝建築，只有照片而不知道名稱，會使用 Google 的什麼功能？",
+      type: "choice",
+      options: [
+        { text: "A. Google 翻譯音訊辨識", pass: false },
+        { text: "B. Google 智慧鏡頭（以圖搜圖）", pass: true },
+        { text: "C. Google 試算表圖表精靈", pass: false }
+      ]
+    },
+    {
+      id: 9,
+      title: "第 9 關：資料夾階層管理概念",
+      desc: "如果把一個共用資料夾設定為「檢視者」，資料夾裡面的子資料夾與檔案權限會如何？",
+      type: "choice",
+      options: [
+        { text: "A. 全部自動沿用「檢視者」權限", pass: true },
+        { text: "B. 裡面的檔案會自動變成「編輯者」", pass: false },
+        { text: "C. 裡面的檔案會全部被封鎖無法看見", pass: false }
+      ]
+    },
+    {
+      id: 10,
+      title: "第 10 關：基本技巧守關檢定（指定文件搜尋）",
+      desc: "資訊報告需要 PDF 格式的簡報！請在下方輸入框寫出使用「filetype」搜尋關於「BTS」的 PDF 檔案指令。",
+      type: "input",
+      validateInput: (val) => {
+        const clean = val.replace(/\s+/g, '').toLowerCase();
+        return clean.includes("filetype:pdf") && clean.includes("bts");
+      },
+      placeholder: "例如：BTS filetype:pdf",
+      hint: "指令格式：關鍵字 filetype:pdf"
+    },
+
+    // === 階段二：進階技巧 ===
+    {
+      id: 11,
+      title: "第 11 關：區間數值與地區限定",
+      desc: "課本精髓：若想在「大安區」與「信義區」特定範圍內搜尋牛排館，搜尋列要使用哪種符號連結兩地？",
+      type: "input",
+      validateInput: (val) => {
+        const clean = val.replace(/\s+/g, '');
+        return clean.includes("大安區..信義區") && clean.includes("牛排");
+      },
+      placeholder: "例如：牛排館 大安區..信義區",
+      hint: "提示：使用兩點「..」來鎖定範圍，例如：牛排館 大安區..信義區"
+    },
+    {
+      id: 12,
+      title: "第 12 關：雲端硬碟權限三重奏",
+      desc: "做分組報告時，若希望組員「可以留下修改建議與評論，但不能擅自修改原文」，應給予什麼權限？",
+      type: "choice",
+      options: [
+        { text: "A. 檢視者", pass: false },
+        { text: "B. 加註者 (Commenter)", pass: true },
+        { text: "C. 編輯者", pass: false }
+      ]
+    },
+    {
+      id: 13,
+      title: "第 13 關：搜尋工具時間篩選魔法",
+      desc: "想要找「最近一週」內發布的最新科技新聞，在 Google 搜尋頁面要先點擊什麼按鈕展開篩選條件？",
+      type: "choice",
+      options: [
+        { text: "A. 搜尋列右側的「工具」按鈕", pass: true },
+        { text: "B. 鍵盤的 F5 重新整理", pass: false },
+        { text: "C. 瀏覽器的「列印」功能", pass: false }
+      ]
+    },
+    {
+      id: 14,
+      title: "第 14 關：雙向備份的核心素養",
+      desc: "為什麼將檔案放在「Google 雲端硬碟」之後，重大專案依然建議下載一份備份到「本機隨身碟」？",
+      type: "choice",
+      options: [
+        { text: "A. 因為雲端硬碟每週五會固定清空一次", pass: false },
+        { text: "B. 避免遇到網路中斷或服務不可用時，仍保有離線可用資料", pass: true },
+        { text: "C. 隨身碟比全世界的伺服器都更安全、永遠不會故障", pass: false }
+      ]
+    },
+    {
+      id: 15,
+      title: "第 15 關：快速關閉分頁神技",
+      desc: "查完資料想快速關閉當前分頁，不想每次都精準瞄準打叉叉？點擊框框並按下關閉分頁快捷鍵（在瀏覽器中若擔心誤關當前分頁，可直接點擊下方模擬按鈕）：",
+      type: "key",
+      targetText: "Ctrl + W",
+      validateKey: (e) => e.ctrlKey && (e.key === 'W' || e.key === 'w'),
+      hint: "提示：快捷鍵為 Ctrl + W（注意：瀏覽器原生可能直接關閉分頁，建議點擊下方模擬按鈕）"
+    },
+    {
+      id: 16,
+      title: "第 16 關：雲端檔案共享上限知識",
+      desc: "Google 文件單一檔案最多可以與多少個獨立的電子郵件地址設定共用？",
+      type: "choice",
+      options: [
+        { text: "A. 100 個", pass: false },
+        { text: "B. 600 個", pass: true },
+        { text: "C. 1000 個", pass: false }
+      ]
+    },
+    {
+      id: 17,
+      title: "第 17 關：同時編輯的上限門檻",
+      desc: "Google 雲端應用程式中，一個檔案最多可供多少個裝置或分頁同時開啟編輯？",
+      type: "choice",
+      options: [
+        { text: "A. 50 個", pass: false },
+        { text: "B. 100 個（超過後僅擁有者與部分具權限者可編輯）", pass: true },
+        { text: "C. 500 個", pass: false }
+      ]
+    },
+    {
+      id: 18,
+      title: "第 18 關：分頁切換閃電手",
+      desc: "在 Chrome 開了 8 個分頁，想瞬間跳回第 1 個分頁，按下哪組快捷鍵最俐落？",
+      type: "key",
+      targetText: "Ctrl + 1",
+      validateKey: (e) => e.ctrlKey && (e.key === '1'),
+      hint: "提示：點擊框框，按住 Ctrl + 1（或點擊下方模擬按鈕）"
+    },
+    {
+      id: 19,
+      title: "第 19 關：指定網站站內搜尋語法",
+      desc: "若只想搜尋「edu.tw」政府教育機構網站中的「雲端運算」資料，可以使用哪種高階搜尋語法？",
+      type: "input",
+      validateInput: (val) => {
+        const clean = val.replace(/\s+/g, '').toLowerCase();
+        return clean.includes("site:edu.tw") && clean.includes("雲端運算");
+      },
+      placeholder: "例如：雲端運算 site:edu.tw",
+      hint: "提示語法：site:網站網址，如：雲端運算 site:edu.tw"
+    },
+    {
+      id: 20,
+      title: "第 20 關：特務終極試煉（課綱應用整合）",
+      desc: "課堂大任務：請寫出一個能「在教育部網站 (edu.tw) 尋找包含『生成式AI』完整詞彙的 PDF 檔案」的特務級複合搜尋指令！",
+      type: "input",
+      validateInput: (val) => {
+        const clean = val.replace(/\s+/g, '').toLowerCase();
+        const hasQuote = val.includes('"生成式AI"') || val.includes('"生成式ai"') || val.includes('“生成式AI”');
+        const hasSite = clean.includes("site:edu.tw");
+        const hasPdf = clean.includes("filetype:pdf");
+        return hasQuote && hasSite && hasPdf;
+      },
+      placeholder: '例如："生成式AI" site:edu.tw filetype:pdf',
+      hint: '三合一技巧：雙引號精準 + site: + filetype:pdf'
+    }
+  ];
+
+  // 本地進度儲存機制
+  const STORAGE_KEY = "chrome_tech_agent_progress_v1";
+  let currentUnlockedLevel = parseInt(localStorage.getItem(STORAGE_KEY), 10) || 1;
+
+  // 渲染關卡介面
+  function renderLevels() {
+    const stageBasicEl = document.getElementById('stageBasic');
+    const stageAdvancedEl = document.getElementById('stageAdvanced');
+
+    stageBasicEl.innerHTML = '';
+    stageAdvancedEl.innerHTML = '';
+
+    // 更新進階頁籤狀態
+    if (currentUnlockedLevel > 10) {
+      document.getElementById('tabAdvanced').classList.remove('locked');
+      document.getElementById('tabAdvanced').textContent = "🔥 階段二：進階技巧 (已解鎖 ✨)";
+    }
+
+    levels.forEach((lvl) => {
+      const card = document.createElement('div');
+      const isCleared = lvl.id < currentUnlockedLevel;
+      const isCurrent = lvl.id === currentUnlockedLevel;
+      const isLocked = lvl.id > currentUnlockedLevel;
+
+      card.className = `level-card ${isCleared ? 'cleared' : ''} ${isCurrent ? 'current' : ''} ${isLocked ? 'disabled' : ''}`;
+      card.id = `card-${lvl.id}`;
+
+      let badgeText = isCleared ? "✅ 已通過" : (isCurrent ? "⚡ 挑戰中" : "🔒 未解鎖");
+
+      let actionHTML = '';
+      if (lvl.type === 'key') {
+        actionHTML = `
+          <div class="key-box-container">
+            <div class="key-box" tabindex="0" onkeydown="handleKeyInput(event, ${lvl.id})">
+              <div class="key-box-hint">${lvl.hint}</div>
+              <div class="key-box-display" id="key-disp-${lvl.id}">${isCleared ? `🎯 成功通關：${lvl.targetText}` : '等待按鍵指令...'}</div>
+            </div>
+            ${!isCleared && isCurrent ? `<button class="key-virtual-btn" onclick="simulateKeyPass(${lvl.id})">⌨️ 點擊送出快捷鍵指令 [ ${lvl.targetText} ]</button>` : ''}
+          </div>
+        `;
+      } else if (lvl.type === 'choice') {
+        actionHTML = `<div class="options-grid">` + lvl.options.map((opt, idx) => `
+          <button class="option-btn" onclick="handleChoice(${lvl.id}, ${opt.pass})">${opt.text}</button>
+        `).join('') + `</div>`;
+      } else if (lvl.type === 'input') {
+        actionHTML = `
+          <div class="input-box-wrapper">
+            <input type="text" class="custom-input" id="input-${lvl.id}" placeholder="${lvl.placeholder}" onkeypress="handleEnterKey(event, ${lvl.id})">
+            <button class="submit-btn" onclick="handleTextInput(${lvl.id})">送出驗證</button>
+          </div>
+          <div style="margin-top:6px; font-size:0.85rem; color:#64748b;">${lvl.hint}</div>
+        `;
+      }
+
+      card.innerHTML = `
+        <div class="level-header">
+          <span class="level-title">${lvl.title}</span>
+          <span class="level-badge">${badgeText}</span>
+        </div>
+        <p class="level-desc">${lvl.desc}</p>
+        <div class="action-zone">${actionHTML}</div>
+        <div class="msg-feedback" id="fb-${lvl.id}"></div>
+      `;
+
+      if (lvl.id <= 10) {
+        stageBasicEl.appendChild(card);
+      } else {
+        stageAdvancedEl.appendChild(card);
+      }
+    });
+
+    updateProgress();
+  }
+
+  // 鍵盤輸入事件處理
+  function handleKeyInput(e, lvlId) {
+    if (lvlId !== currentUnlockedLevel) return;
+    const lvl = levels.find(l => l.id === lvlId);
+    e.preventDefault();
+
+    const disp = document.getElementById(`key-disp-${lvlId}`);
+    if (lvl.validateKey(e)) {
+      disp.textContent = `🎯 偵測成功：${lvl.targetText}！`;
+      disp.style.color = "#10b981";
+      passLevel(lvlId);
+    } else {
+      disp.textContent = `偵測到：${e.key} (不太對，請看提示再試一次)`;
+      disp.style.color = "#ef4444";
+      showFeedback(lvlId, false, "按鍵組合不符合，請確認鍵盤按法！");
+    }
+  }
+
+  // 虛擬快捷鍵觸發（防止瀏覽器系統快捷鍵衝突與 Google Sites 嵌入限制）
+  function simulateKeyPass(lvlId) {
+    if (lvlId !== currentUnlockedLevel) return;
+    const lvl = levels.find(l => l.id === lvlId);
+    const disp = document.getElementById(`key-disp-${lvlId}`);
+    if (disp) {
+      disp.textContent = `🎯 指令成功送出：${lvl.targetText}！`;
+      disp.style.color = "#10b981";
+    }
+    passLevel(lvlId);
+  }
+
+  // Enter 鍵快速送出文字
+  function handleEnterKey(e, lvlId) {
+    if (e.key === 'Enter') {
+      handleTextInput(lvlId);
+    }
+  }
+
+  // 選擇題點擊處理
+  function handleChoice(lvlId, isPass) {
+    if (lvlId !== currentUnlockedLevel) return;
+    if (isPass) {
+      passLevel(lvlId);
+    } else {
+      showFeedback(lvlId, false, "答案不太正確，再思考一下課本教學觀念！");
+    }
+  }
+
+  // 文字輸入驗證
+  function handleTextInput(lvlId) {
+    if (lvlId !== currentUnlockedLevel) return;
+    const lvl = levels.find(l => l.id === lvlId);
+    const inputVal = document.getElementById(`input-${lvlId}`).value;
+
+    if (lvl.validateInput(inputVal)) {
+      passLevel(lvlId);
+    } else {
+      showFeedback(lvlId, false, "指令格式有誤差或缺少指定關鍵字符號，請參考提示檢查！");
+    }
+  }
+
+  // 通關判定
+  function passLevel(lvlId) {
+    showFeedback(lvlId, true, "🎉 太棒了！回答完全正確，已解鎖下一關！");
+    if (lvlId === currentUnlockedLevel) {
+      currentUnlockedLevel++;
+      localStorage.setItem(STORAGE_KEY, currentUnlockedLevel);
+
+      // 檢查是否突破第 10 關
+      if (lvlId === 10) {
+        document.getElementById('tabAdvanced').classList.remove('locked');
+        document.getElementById('tabAdvanced').textContent = "🔥 階段二：進階技巧 (已解鎖 ✨)";
+        showModal("🏆 突破第一階段！", "你已通過所有基本技巧 10 關！進階技巧的大門已經開啟，立即切換前往挑戰更強大的進階功能！");
+      }
+
+      // 檢查是否全通關
+      if (lvlId === 20) {
+        showModal("👑 傳奇特務誕生！", "恭喜你！完全制霸全部 20 道資訊科技與雲端運算關卡！你已經是一位全方位的科技小達人！");
+      }
+
+      setTimeout(() => {
+        renderLevels();
+        const nextCard = document.getElementById(`card-${currentUnlockedLevel}`);
+        if (nextCard) {
+          nextCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 700);
+    }
+  }
+
+  // 回饋訊息展示
+  function showFeedback(lvlId, isPass, text) {
+    const fb = document.getElementById(`fb-${lvlId}`);
+    if (!fb) return;
+    fb.className = `msg-feedback ${isPass ? 'pass' : 'fail'}`;
+    fb.textContent = text;
+  }
+
+  // 重設進度
+  function confirmResetProgress() {
+    if (confirm("確定要重設所有關卡進度，重新開始挑戰嗎？")) {
+      localStorage.removeItem(STORAGE_KEY);
+      currentUnlockedLevel = 1;
+      document.getElementById('tabAdvanced').classList.add('locked');
+      document.getElementById('tabAdvanced').textContent = "🔥 階段二：進階技巧 (11~20關 🔒)";
+      switchStage('basic');
+      renderLevels();
+    }
+  }
+
+  // 更新總進度條
+  function updateProgress() {
+    const clearedCount = Math.min(20, currentUnlockedLevel - 1);
+    const pct = Math.min(100, Math.round((clearedCount / 20) * 100));
+    document.getElementById('progressBar').style.width = `${pct}%`;
+    document.getElementById('progressText').textContent = `${clearedCount} / 20 關 (${pct}%)`;
+  }
+
+  // 階段切換
+  function switchStage(stage) {
+    if (stage === 'advanced' && currentUnlockedLevel <= 10) {
+      alert("🔒 必須先通過基本技巧第 10 關，才能進入進階技巧修練場！");
+      return;
+    }
+
+    document.getElementById('tabBasic').classList.toggle('active', stage === 'basic');
+    document.getElementById('tabAdvanced').classList.toggle('active', stage === 'advanced');
+    document.getElementById('stageBasic').classList.toggle('active', stage === 'basic');
+    document.getElementById('stageAdvanced').classList.toggle('active', stage === 'advanced');
+  }
+
+  // 彈窗操作
+  function showModal(title, desc) {
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalDesc').textContent = desc;
+    document.getElementById('finishModal').style.display = 'flex';
+  }
+
+  function closeModal() {
+    document.getElementById('finishModal').style.display = 'none';
+    if (currentUnlockedLevel === 11) {
+      switchStage('advanced');
+    }
+  }
+
+  // 初始化啟動
+  if (currentUnlockedLevel > 10) {
+    switchStage('advanced');
+  }
+  renderLevels();
+</script>
+
+</body>
+</html>
